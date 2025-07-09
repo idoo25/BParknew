@@ -1499,7 +1499,11 @@ public class ParkingController {
 			stmt.setInt(2, userID);
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (rs.next()) {
-					return rs.getInt(1) > 0;
+					boolean isOwner = rs.getInt(1) > 0;
+					if (!isOwner) {
+						System.out.println("Security Alert: User " + userID + " attempted to access parking order " + parkingInfoID + " without authorization");
+					}
+					return isOwner;
 				}
 			}
 		} catch (SQLException e) {
