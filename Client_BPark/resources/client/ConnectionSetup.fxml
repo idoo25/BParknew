@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+
+<StackPane styleClass="root-container" xmlns="http://javafx.com/javafx/17.0.15" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ConnectionSetupController">
+   <children>
+      <!-- Background gradient -->
+      <Rectangle height="600.0" styleClass="background-gradient" width="450.0" />
+      
+      <!-- Main content card -->
+      <VBox alignment="CENTER" maxWidth="380.0" spacing="0" styleClass="main-card">
+         <children>
+            <!-- Logo Section -->
+            <VBox alignment="CENTER" spacing="15.0" styleClass="logo-section">
+               <children>
+                  <ImageView fitHeight="116.0" fitWidth="374.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/bpark logo.png" />
+                     </image>
+                     <effect>
+                        <DropShadow color="#00000040" offsetY="2.0" radius="10.0" />
+                     </effect>
+                  </ImageView>
+                  <Label styleClass="app-subtitle" text="Connection Setup" />
+               </children>
+               <padding>
+                  <Insets bottom="30.0" top="30.0" />
+               </padding>
+            </VBox>
+
+            <!-- Server Configuration Section -->
+            <VBox spacing="20.0" styleClass="config-section">
+               <children>
+                  <Label styleClass="section-title" text="Server Configuration" />
+                  
+                  <VBox spacing="15.0">
+                     <children>
+                        <VBox spacing="8.0">
+                           <children>
+                              <Label styleClass="field-label" text="Server IP Address" />
+                              <TextField fx:id="txtServerIP" promptText="Enter server IP (e.g., localhost)" styleClass="modern-textfield" text="localhost" />
+                           </children>
+                        </VBox>
+                        
+                        <VBox spacing="8.0">
+                           <children>
+                              <Label styleClass="field-label" text="Server Port" />
+                              <TextField fx:id="txtServerPort" promptText="Enter port number (e.g., 5555)" styleClass="modern-textfield" text="5555" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </VBox>
+               </children>
+               <padding>
+                  <Insets bottom="25.0" left="30.0" right="30.0" top="25.0" />
+               </padding>
+            </VBox>
+
+            <!-- Application Selection Section -->
+            <VBox alignment="CENTER" spacing="20.0" styleClass="selection-section">
+               <children>
+                  <Label styleClass="section-title" text="Launch Application" />
+                  
+                  <VBox alignment="CENTER" spacing="12.0">
+                     <children>
+                        <Button fx:id="btnClientApp" maxWidth="280.0" mnemonicParsing="false" onAction="#handleLaunchClientApp" prefHeight="50.0" styleClass="launch-button-primary" text="Client Portal" />
+                        
+                        <Button fx:id="btnKioskApp" maxWidth="280.0" mnemonicParsing="false" onAction="#handleLaunchKioskApp" prefHeight="50.0" styleClass="launch-button-secondary" text="Kiosk Terminal" />
+                     </children>
+                  </VBox>
+               </children>
+               <padding>
+                  <Insets bottom="25.0" left="30.0" right="30.0" top="0" />
+               </padding>
+            </VBox>
+
+            <!-- Status Section -->
+            <VBox alignment="CENTER" spacing="15.0" styleClass="status-section">
+               <children>
+                  <Label fx:id="lblStatus" styleClass="status-label" text="Enter server details to connect" textAlignment="CENTER" wrapText="true" />
+                  <Button fx:id="btnTestConnection" mnemonicParsing="false" onAction="#handleTestConnection" styleClass="test-connection-btn" text="Test Connection" />
+               </children>
+               <padding>
+                  <Insets bottom="30.0" left="30.0" right="30.0" top="20.0" />
+               </padding>
+            </VBox>
+
+         </children>
+         <effect>
+            <DropShadow color="#00000020" offsetY="4.0" radius="20.0" />
+         </effect>
+      </VBox>
+   </children>
+</StackPane>

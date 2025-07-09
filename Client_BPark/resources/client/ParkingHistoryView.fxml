@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1"
+xmlns:fx="http://javafx.com/fxml/1"
+fx:controller="controllers.ParkingHistoryController" prefHeight="600.0"
+prefWidth="1100.0">
+
+<!-- Top Bar -->
+<top>
+<VBox spacing="10" style="-fx-background-color: #2C3E50;">
+<padding>
+<Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+</padding>
+
+<HBox alignment="CENTER_LEFT" spacing="20">
+<Label text="Parking History" textFill="WHITE">
+<font>
+<Font size="24.0" />
+</font>
+</Label>
+
+<Region HBox.hgrow="ALWAYS" />
+
+<Label fx:id="lblUserName" text="User: --" textFill="WHITE" />
+<Button fx:id="btnClose" text="Close" onAction="#handleClose" styleClass="logout-button" />
+</HBox>
+</VBox>
+</top>
+
+<!-- Main Content Area -->
+<center>
+<VBox spacing="20" style="-fx-background-color: #ECF0F1;">
+<padding>
+<Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+</padding>
+
+<!-- Statistics Section -->
+<HBox spacing="30" alignment="CENTER_LEFT">
+<VBox alignment="CENTER" spacing="5">
+<Label text="Total Sessions" style="-fx-font-weight: bold; -fx-font-size: 14px;" />
+<Label fx:id="lblTotalSessions" text="0" style="-fx-font-size: 18px; -fx-text-fill: #2C3E50;" />
+</VBox>
+<Separator orientation="VERTICAL" />
+<VBox alignment="CENTER" spacing="5">
+<Label text="Active Sessions" style="-fx-font-weight: bold; -fx-font-size: 14px;" />
+<Label fx:id="lblActiveSessions" text="0" style="-fx-font-size: 18px; -fx-text-fill: #27AE60;" />
+</VBox>
+<Separator orientation="VERTICAL" />
+<VBox alignment="CENTER" spacing="5">
+<Label text="Completed Sessions" style="-fx-font-weight: bold; -fx-font-size: 14px;" />
+<Label fx:id="lblCompletedSessions" text="0" style="-fx-font-size: 18px; -fx-text-fill: #3498DB;" />
+</VBox>
+</HBox>
+
+<Separator />
+
+<!-- Filter Section -->
+<HBox spacing="15" alignment="CENTER_LEFT">
+<Label text="Filter by Status:" style="-fx-font-weight: bold;" />
+<ComboBox fx:id="comboStatusFilter" promptText="All Sessions" prefWidth="150" onAction="#handleFilterChange" />
+
+</HBox>
+
+<!-- Parking History Table -->
+<TableView fx:id="tableHistory" prefHeight="400">
+<columns>
+<TableColumn fx:id="colCode" text="Code" prefWidth="80" />
+<TableColumn fx:id="colDate" text="Date" prefWidth="100" />
+<TableColumn fx:id="colEntryTime" text="Entry Time" prefWidth="120" />
+<TableColumn fx:id="colExitTime" text="Exit Time" prefWidth="120" />
+<TableColumn fx:id="colDuration" text="Duration" prefWidth="140" />
+<TableColumn fx:id="colSpotNumber" text="Spot" prefWidth="80" />
+<TableColumn fx:id="colOrderType" text="Type" prefWidth="90" />
+<TableColumn fx:id="colStatus" text="Status" prefWidth="90" />
+<TableColumn fx:id="colLate" text="Late" prefWidth="60" />
+<TableColumn fx:id="colExtended" text="Extended" prefWidth="80" />
+</columns>
+</TableView>
+
+</VBox>
+</center>
+
+<!-- Status Bar -->
+<bottom>
+<HBox spacing="20" style="-fx-background-color: #BDC3C7;">
+<padding>
+<Insets bottom="5.0" left="20.0" right="20.0" top="5.0" />
+</padding>
+
+<Label fx:id="lblStatus" text="Loading parking history..." />
+<Region HBox.hgrow="ALWAYS" />
+<Label text="BPark Parking History v1.0" />
+</HBox>
+</bottom>
+
+</BorderPane>

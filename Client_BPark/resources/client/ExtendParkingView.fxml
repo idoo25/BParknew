@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.ExtendParkingController"
+      alignment="CENTER" spacing="20">
+
+    <padding>
+        <Insets top="30" right="30" bottom="30" left="30"/>
+    </padding>
+
+    <Label text="Extend Parking Time" style="-fx-font-size: 20px;" />
+
+    <HBox spacing="10" alignment="CENTER">
+        <Label text="Parking Code:" prefWidth="120"/>
+        <TextField fx:id="codeField" promptText="Enter parking code" prefWidth="250"/>
+    </HBox>
+
+    <HBox spacing="10" alignment="CENTER">
+        <Label text="Extension Hours:" prefWidth="120"/>
+        <ComboBox fx:id="hoursCombo" prefWidth="250"/>
+    </HBox>
+
+    <Button fx:id="extendButton" text="Submit" onAction="#handleSubmit" prefWidth="120"/>
+
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill: green;"/>
+</VBox>

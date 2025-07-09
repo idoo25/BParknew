@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1"
+	xmlns:fx="http://javafx.com/fxml/1"
+	fx:controller="controllers.AttendantController" prefHeight="700.0"
+	prefWidth="900.0">
+	<!-- Top Bar -->
+	<top>
+		<VBox spacing="10" style="-fx-background-color: #2C3E50;">
+			<padding>
+				<Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+			</padding>
+
+			<HBox alignment="CENTER_LEFT" spacing="20">
+				<Label text="BPark - Parking Attendant Portal"
+					textFill="WHITE">
+					<font>
+						<Font size="24.0" />
+					</font>
+				</Label>
+
+				<Region HBox.hgrow="ALWAYS" />
+
+				<Label fx:id="lblParkingStatus"
+					text="Active Parking Spots: --" textFill="WHITE">
+					<font>
+						<Font size="16.0" />
+					</font>
+				</Label>
+
+				<Button text="Refresh" onAction="#loadActiveParkings" />
+				<Button fx:id="btnLogout" text="Logout"
+					onAction="#handleLogout" styleClass="logout-button" />
+				<Button fx:id="btnExit" text="Exit"
+					onAction="#handleExit" styleClass="exit-button" />
+			</HBox>
+		</VBox>
+	</top>
+
+	<!-- Main Content -->
+	<center>
+		<TabPane tabClosingPolicy="UNAVAILABLE">
+
+			<!-- Tab 1: Register New Subscriber -->
+			<Tab text="Register New Subscriber">
+				<ScrollPane fitToWidth="true">
+					<VBox spacing="20" style="-fx-background-color: #ECF0F1;">
+						<padding>
+							<Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+						</padding>
+
+						<Label text="New Subscriber Registration"
+							style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+
+						<GridPane hgap="15" vgap="15" maxWidth="600">
+							<columnConstraints>
+								<ColumnConstraints minWidth="120"
+									prefWidth="120" />
+								<ColumnConstraints minWidth="250"
+									prefWidth="300" />
+							</columnConstraints>
+
+							<!-- Registration Form Fields -->
+							<Label text="Full Name:" GridPane.columnIndex="0"
+								GridPane.rowIndex="0" />
+							<TextField fx:id="txtName"
+								promptText="Enter subscriber's full name"
+								GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+							<Label text="Phone Number:" GridPane.columnIndex="0"
+								GridPane.rowIndex="1" />
+							<TextField fx:id="txtPhone" promptText="05X-XXXXXXX"
+								GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+							<Label text="Email:" GridPane.columnIndex="0"
+								GridPane.rowIndex="2" />
+							<TextField fx:id="txtEmail"
+								promptText="email@example.com" GridPane.columnIndex="1"
+								GridPane.rowIndex="2" />
+
+							<Label text="Car Number:" GridPane.columnIndex="0"
+								GridPane.rowIndex="3" />
+							<TextField fx:id="txtCarNumber" promptText="XX-XXX-XX"
+								GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+							<Label text="Username:" GridPane.columnIndex="0"
+								GridPane.rowIndex="4" />
+							<HBox spacing="10" GridPane.columnIndex="1"
+								GridPane.rowIndex="4">
+								<TextField fx:id="txtUsername"
+									promptText="Choose username" HBox.hgrow="ALWAYS" />
+								<Button text="Generate"
+									onAction="#handleGenerateUsername" minWidth="80" />
+							</HBox>
+						</GridPane>
+
+						<HBox spacing="10">
+							<Button text="Register Subscriber"
+								onAction="#handleRegisterSubscriber" styleClass="primary-button"
+								prefWidth="150" />
+							<Button text="Clear Form"
+								onAction="#clearRegistrationForm" styleClass="primary-button"
+								prefWidth="150" />
+						</HBox>
+
+						<Label fx:id="lblRegistrationStatus" />
+
+					</VBox>
+				</ScrollPane>
+			</Tab>
+
+			<!-- Tab 2: Active Parkings -->
+			<Tab text="Active Parkings">
+				<VBox spacing="10">
+					<padding>
+						<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+					</padding>
+
+					<HBox spacing="10" alignment="CENTER_LEFT">
+						<Label text="Current Active Parking Sessions"
+							style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+						<Region HBox.hgrow="ALWAYS" />
+						<Button text="Refresh Now" onAction="#loadActiveParkings" />
+						<Label text="(Auto-refresh every 30 seconds)"
+							style="-fx-font-style: italic;" />
+					</HBox>
+
+					<TableView fx:id="tableActiveParkings"
+						VBox.vgrow="ALWAYS">
+						<columns>
+							<TableColumn fx:id="colParkingCode"
+								text="Parking Code" prefWidth="10" />
+							<TableColumn fx:id="colSubscriberName"
+								text="Subscriber" prefWidth="150" />
+							<TableColumn fx:id="colSpot" text="Spot"
+								prefWidth="95" />
+							<TableColumn fx:id="colEntryTime" text="Entry Time"
+								prefWidth="135" />
+							<TableColumn fx:id="colExpectedExit"
+								text="Expected Exit" prefWidth="135" />
+							<TableColumn fx:id="colType" text="Order?"
+								prefWidth="110" />
+							<TableColumn fx:id="colCode" text="user Code"
+								prefWidth="110" />
+						</columns>
+					</TableView>
+
+
+
+				</VBox>
+			</Tab>
+
+			<!-- Tab 3: Subscribers -->
+			<Tab text="Subscribers info">
+				<VBox spacing="10">
+					<padding>
+						<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+					</padding>
+
+					<HBox spacing="10" alignment="CENTER_LEFT">
+						<Label text="All Subscribers"
+							style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+						<Region HBox.hgrow="ALWAYS" />
+						<Button text="Refresh" onAction="#loadSubscribers" />
+					</HBox>
+
+					<TableView fx:id="tableSubscribers" VBox.vgrow="ALWAYS">
+						<columns>
+							<TableColumn fx:id="colUserID" text="User ID"
+								prefWidth="80" />
+							<TableColumn fx:id="colSubName" text="Name"
+								prefWidth="120" />
+							<TableColumn fx:id="colSubPhone" text="Phone"
+								prefWidth="110" />
+							<TableColumn fx:id="colSubEmail" text="Email"
+								prefWidth="180" />
+							<TableColumn fx:id="colSubCar" text="Car Number"
+								prefWidth="110" />
+							<TableColumn fx:id="colSubUsername" text="Username"
+								prefWidth="130" />
+						</columns>
+					</TableView>
+				</VBox>
+			</Tab>
+
+			<Tab text="Subscriber History">
+				<AnchorPane>
+					<VBox spacing="10" alignment="CENTER" layoutX="0" layoutY="0"
+						AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+						<Label text="Enter User Name:"
+							style="-fx-font-size: 14px; -fx-font-weight: bold;" />
+						<HBox spacing="10" alignment="CENTER">
+							<TextField fx:id="subscriberIdField"
+								promptText="Enter User Name..." />
+							<Button fx:id="btnViewHistory" text="Enter"
+								onAction="#handleSubscriberIdEnter" minWidth="80"
+								prefWidth="100" maxWidth="120" style="-fx-font-size: 13px;" />
+						</HBox>
+					</VBox>
+				</AnchorPane>
+			</Tab>
+
+		</TabPane>
+	</center>
+
+	<!-- Status Bar -->
+	<bottom>
+		<HBox spacing="20" style="-fx-background-color: #BDC3C7;">
+			<padding>
+				<Insets bottom="5.0" left="20.0" right="20.0" top="5.0" />
+			</padding>
+
+			<Label text="Status: Connected" />
+			<Separator orientation="VERTICAL" />
+			<Label fx:id="lblAttendantInfo" text="Attendant: --" />
+			<Region HBox.hgrow="ALWAYS" />
+			<Label text="BPark Attendant Portal v1.0" />
+		</HBox>
+	</bottom>
+
+</BorderPane>

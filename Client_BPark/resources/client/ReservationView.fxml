@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" xmlns="http://javafx.com/javafx/11.0.1" 
+      xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="controllers.SubscriberController">
+    
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Make Reservation" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+    
+    <Label text="Select date and time for reservation:" />
+    
+    <HBox spacing="20">
+        <VBox spacing="5">
+            <Label text="Date:" />
+            <DatePicker fx:id="datePickerReservation"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Time:" />
+            <ComboBox fx:id="comboTimeSlot" prefWidth="150" promptText="Select time"/>
+        </VBox>
+    </HBox>
+    
+    <Button text="Make Reservation" onAction="#handleMakeReservation"/>
+    
+    <Label text="* Reservations must be 24 hours to 7 days in advance"/>
+    <Label text="* Reservation requires at least 40% available spots"/>
+    
+    
+    <Separator />
+
+<Label text="Cancel Reservation" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+
+<Label text="Enter reservation code to cancel:" />
+
+<HBox spacing="10" alignment="CENTER_LEFT">
+    <Label text="Code:" />
+    <TextField fx:id="txtCancelCode" promptText="Enter code..." prefWidth="200" />
+    <Button text="Cancel" onAction="#handleCancelReservationFromPage" />
+</HBox>
+</VBox>
+

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+
+<VBox xmlns="http://javafx.com/javafx/17.0.15"
+	xmlns:fx="http://javafx.com/fxml/1"
+	fx:controller="controllers.LauncherController"
+	styleClass="root"
+	stylesheets="@../css/LauncherStyles.css"
+	spacing="20"
+	alignment="CENTER"
+	minWidth="400.0"
+	minHeight="500.0"
+	prefWidth="450.0"
+	prefHeight="600.0">
+	
+	<padding>
+		<Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+	</padding>
+
+	<!-- Main Title with Logo -->
+	<VBox alignment="CENTER" spacing="10">
+		<ImageView fitHeight="100.0" fitWidth="320.0"
+			pickOnBounds="true" preserveRatio="true">
+			<image>
+				<Image url="@../images/BParkImage.png" />
+			</image>
+		</ImageView>
+		<Label text="Connection Setup" styleClass="main-title" />
+	</VBox>
+
+	<!-- Server Configuration Panel -->
+	<VBox styleClass="server-config-panel" spacing="15" alignment="CENTER" maxWidth="400.0">
+		<padding>
+			<Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+		</padding>
+
+		<Label text="Server Configuration" styleClass="section-header" />
+
+		<GridPane hgap="15" vgap="10" alignment="CENTER">
+			<columnConstraints>
+				<ColumnConstraints minWidth="120" prefWidth="120" />
+				<ColumnConstraints minWidth="200" prefWidth="200" />
+			</columnConstraints>
+
+			<Label text="Server IP:" styleClass="field-label" 
+				GridPane.columnIndex="0" GridPane.rowIndex="0" />
+			<TextField fx:id="txtServerIP" 
+				promptText="Enter server IP"
+				styleClass="text-field" 
+				text="localhost"
+				GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+			<Label text="Server Port:" styleClass="field-label" 
+				GridPane.columnIndex="0" GridPane.rowIndex="1" />
+			<TextField fx:id="txtServerPort" 
+				promptText="Enter port number"
+				styleClass="text-field" 
+				text="5555"
+				GridPane.columnIndex="1" GridPane.rowIndex="1" />
+		</GridPane>
+	</VBox>
+
+	<!-- Application Selection Panel -->
+	<VBox fx:id="vboxAppSelection" 
+		styleClass="app-selection-panel" 
+		spacing="15" 
+		alignment="CENTER"
+		visible="false"
+		managed="false"
+		maxWidth="400.0">
+		<padding>
+			<Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+		</padding>
+
+		<Label text="Launch Application" styleClass="section-header" />
+
+		<HBox spacing="20" alignment="CENTER">
+			<Button fx:id="btnClientApp" 
+				text="Client Portal" 
+				onAction="#handleClientApp"
+				styleClass="launch-button-primary"
+				prefWidth="140" />
+
+			<Button fx:id="btnKioskApp" 
+				text="Kiosk Terminal" 
+				onAction="#handleKioskApp"
+				styleClass="launch-button-secondary"
+				prefWidth="140" />
+		</HBox>
+	</VBox>
+
+	<!-- Status Panel -->
+	<VBox styleClass="status-panel" spacing="10" alignment="CENTER" maxWidth="400.0">
+		<padding>
+			<Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
+		</padding>
+
+		<Label fx:id="lblStatus" 
+			text="Enter server details to connect" 
+			styleClass="status-label"
+			wrapText="true" />
+	</VBox>
+
+	<!-- Action Button -->
+	<HBox spacing="20" alignment="CENTER">
+		<Button fx:id="btnTestConnection" 
+			text="Test Connection" 
+			onAction="#handleTestConnection"
+			styleClass="connect-button" />
+	</HBox>
+
+	<!-- Footer -->
+	<Label text="BPark Automatic Parking Management System - Launcher" 
+		styleClass="footer-label" />
+
+</VBox>

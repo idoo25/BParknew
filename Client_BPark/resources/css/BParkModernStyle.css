@@ -1,0 +1,227 @@
+/* Modern BPark Connection Setup Styles */
+
+/* Root container with gradient background */
+.root-container {
+    -fx-background-color: linear-gradient(to bottom right, #667eea 0%, #764ba2 100%);
+}
+
+.background-gradient {
+    -fx-fill: linear-gradient(to bottom right, #667eea 0%, #764ba2 100%);
+    -fx-arc-height: 0;
+    -fx-arc-width: 0;
+}
+
+/* Main card styling */
+.main-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 20;
+    -fx-max-width: 380px;
+    -fx-min-width: 380px;
+    -fx-pref-width: 380px;
+}
+
+/* Logo section */
+.logo-section {
+    -fx-background-color: transparent;
+}
+
+.app-title {
+    -fx-font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2d3748;
+}
+
+.app-subtitle {
+    -fx-font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 16px;
+    -fx-text-fill: #718096;
+    -fx-font-weight: normal;
+}
+
+/* Configuration section */
+.config-section {
+    -fx-background-color: #f7fafc;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1 0 1 0;
+}
+
+.section-title {
+    -fx-font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 18px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #2d3748;
+}
+
+.field-label {
+    -fx-font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    -fx-text-fill: #4a5568;
+}
+
+/* Modern text field styling */
+.modern-textfield {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 8;
+    -fx-padding: 12 16;
+    -fx-font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2d3748;
+    -fx-pref-height: 45;
+}
+
+.modern-textfield:focused {
+    -fx-border-color: #667eea;
+    -fx-border-width: 2;
+    -fx-background-color: #ffffff;
+}
+
+.modern-textfield:hover {
+    -fx-border-color: #cbd5e0;
+}
+
+/* Selection section */
+.selection-section {
+    -fx-background-color: transparent;
+}
+
+/* Launch buttons */
+.launch-button-primary {
+    -fx-background-color: linear-gradient(to right, #667eea 0%, #764ba2 100%);
+    -fx-background-radius: 25;
+    -fx-text-fill: white;
+    -fx-font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 16px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-padding: 0 30;
+    -fx-graphic-text-gap: 10;
+}
+
+.launch-button-primary:hover {
+    -fx-background-color: linear-gradient(to right, #5a67d8 0%, #6b46a1 100%);
+    -fx-effect: dropshadow(gaussian, rgba(102, 126, 234, 0.4), 15, 0, 0, 3);
+}
+
+.launch-button-primary:pressed {
+    -fx-background-color: linear-gradient(to right, #4c51bf 0%, #553c9a 100%);
+    -fx-translate-y: 1;
+}
+
+.launch-button-secondary {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 25;
+    -fx-text-fill: #667eea;
+    -fx-font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 16px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-padding: 0 30;
+    -fx-border-color: #667eea;
+    -fx-border-width: 2;
+    -fx-border-radius: 25;
+    -fx-graphic-text-gap: 10;
+}
+
+.launch-button-secondary:hover {
+    -fx-background-color: #f7fafc;
+    -fx-border-color: #764ba2;
+    -fx-text-fill: #764ba2;
+    -fx-effect: dropshadow(gaussian, rgba(102, 126, 234, 0.3), 10, 0, 0, 2);
+}
+
+.launch-button-secondary:pressed {
+    -fx-background-color: #edf2f7;
+    -fx-translate-y: 1;
+}
+
+/* Status section */
+.status-section {
+    -fx-background-color: transparent;
+}
+
+.status-label {
+    -fx-font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: #718096;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+}
+
+/* Test connection button */
+.test-connection-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #667eea;
+    -fx-font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-cursor: hand;
+    -fx-underline: true;
+    -fx-padding: 5 15;
+}
+
+.test-connection-btn:hover {
+    -fx-text-fill: #764ba2;
+}
+
+.test-connection-btn:pressed {
+    -fx-text-fill: #553c9a;
+}
+
+/* Disabled state for buttons */
+.button:disabled {
+    -fx-opacity: 0.6;
+    -fx-cursor: default;
+}
+
+/* Animations and transitions */
+.button {
+    -fx-background-insets: 0;
+    -fx-background-radius: 25;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 5, 0, 0, 2);
+}
+
+/* Success/Error status colors */
+.status-label {
+    -fx-transition: all 0.3s ease;
+}
+
+/* You can add these classes programmatically for status updates */
+.status-success {
+    -fx-text-fill: #48bb78 !important;
+    -fx-font-weight: 600;
+}
+
+.status-error {
+    -fx-text-fill: #f56565 !important;
+    -fx-font-weight: 600;
+}
+
+.status-info {
+    -fx-text-fill: #4299e1 !important;
+    -fx-font-weight: 500;
+}
+
+/* Smooth scrollbar styling if needed */
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 8;
+}
+
+.scroll-bar:vertical .track {
+    -fx-background-color: #e2e8f0;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #a0aec0;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #718096;
+}

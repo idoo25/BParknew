@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" spacing="20"
+	xmlns="http://javafx.com/javafx/11.0.1"
+	xmlns:fx="http://javafx.com/fxml/1"
+	fx:controller="controllers.KioskController"
+	style="-fx-background-color: linear-gradient(to bottom, #2C3E50, #34495E);"
+	prefHeight="500.0" prefWidth="400.0">
+
+	<padding>
+		<Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+	</padding>
+
+	<!-- Top Bar with Check Availability -->
+	<HBox alignment="CENTER_RIGHT" prefWidth="400">
+		<Button fx:id="btnCheckAvailability" text="Check Availability"
+			onAction="#handleCheckAvailability" prefWidth="150" prefHeight="30"
+			style="-fx-background-color: #E67E22; -fx-text-fill: white; -fx-background-radius: 5; -fx-font-size: 12px; -fx-font-weight: bold;" />
+	</HBox>
+
+	<!-- Logo/Title Section -->
+	<VBox alignment="CENTER" spacing="10">
+		<Label text="Welcome" textFill="WHITE">
+			<font>
+				<Font name="System Bold" size="48.0" />
+			</font>
+		</Label>
+
+		<Label text="Automatic Parking Management System"
+			textFill="#BDC3C7">
+			<font>
+				<Font size="14.0" />
+			</font>
+		</Label>
+	</VBox>
+
+	<!-- Button Area -->
+	<VBox spacing="20" maxWidth="300"
+		style="-fx-background-color: rgba(255, 255, 255, 0.1); -fx-background-radius: 10;">
+		<padding>
+			<Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+		</padding>
+
+		<Button fx:id="btnLoginByID" text="Login by ID"
+			onAction="#handleLoginByID" prefWidth="240" prefHeight="45"
+			style="-fx-background-color: #3498DB; -fx-text-fill: white; -fx-background-radius: 5; -fx-font-size: 16px; -fx-font-weight: bold;" />
+
+		<Button fx:id="btnLoginByRF" text="Scan RF"
+			onAction="#handleLoginByRF" prefWidth="240" prefHeight="45"
+			style="-fx-background-color: #1ABC9C; -fx-text-fill: white; -fx-background-radius: 5; -fx-font-size: 16px; -fx-font-weight: bold;" />
+		<!-- Exit button to terminate kiosk -->
+		<Button fx:id="btnExitKiosk" text="Exit Kiosk"
+			onAction="#handleExitKiosk" prefWidth="240" prefHeight="45"
+			style="-fx-background-color: #C0392B; -fx-text-fill: white; -fx-background-radius: 5; -fx-font-size: 16px; -fx-font-weight: bold;" />
+
+	</VBox>
+
+	<!-- Footer -->
+	<VBox alignment="CENTER" spacing="5">
+		<Label text="Need help? Contact support@bpark.com"
+			textFill="#95A5A6">
+			<font>
+				<Font size="11.0" />
+			</font>
+		</Label>
+		<Label text="© 2025 BPark - All rights reserved"
+			textFill="#7F8C8D">
+			<font>
+				<Font size="10.0" />
+			</font>
+		</Label>
+	</VBox>
+
+</VBox>

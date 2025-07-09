@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.UpdateProfileController"
+      spacing="20" alignment="CENTER">
+
+    <padding>
+        <Insets top="40" right="40" bottom="40" left="40"/>
+    </padding>
+
+    <Label text="Update Your Profile" style="-fx-font-size: 22px;" />
+
+    <HBox spacing="10" alignment="CENTER">
+        <Label text="Email:" prefWidth="120" />
+        <TextField fx:id="emailField" promptText="Enter new email" prefWidth="350" />
+    </HBox>
+
+    <HBox spacing="10" alignment="CENTER">
+        <Label text="Phone:" prefWidth="120" />
+        <TextField fx:id="phoneField" promptText="Enter new phone" prefWidth="350" />
+    </HBox>
+
+    <HBox spacing="10" alignment="CENTER">
+        <Label text="Car Number:" prefWidth="120" />
+        <TextField fx:id="carNumberField" promptText="Enter new car number" prefWidth="350" />
+    </HBox>
+
+    <Button text="Update" onAction="#handleUpdate" prefWidth="120" />
+
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill: green; -fx-font-size: 14px;" />
+
+</VBox>
