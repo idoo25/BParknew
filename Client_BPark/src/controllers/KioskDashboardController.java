@@ -2,6 +2,7 @@ package controllers;
 
 import static common.Message.MessageType.ACTIVATE_RESERVATION_KIOSK;
 import static common.Message.MessageType.ENTER_PARKING_KIOSK;
+import static common.Message.MessageType.EXIT_PARKING;
 import static common.Message.MessageType.FORGOT_CODE_KIOSK;
 import static common.Message.MessageType.RETRIEVE_CAR_KIOSK;
 
@@ -86,7 +87,10 @@ public class KioskDashboardController {
 		result.ifPresent(codeStr -> {
 			try {
 				int parkingInfoID = Integer.parseInt(codeStr);
-				Message msg = new Message(RETRIEVE_CAR_KIOSK, parkingInfoID);
+				// Send parking code with logged in user ID for validation
+				// Format: parkingCode,userID  
+				String exitData = parkingInfoID + "," + loggedInUserID;
+				Message msg = new Message(EXIT_PARKING, exitData);
 				BParkKioskScenes.sendMessage(msg);
 			} catch (NumberFormatException e) {
 				showInfo("Invalid Input", "Parking code must be numeric.");
