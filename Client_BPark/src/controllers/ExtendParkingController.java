@@ -73,6 +73,7 @@ public class ExtendParkingController {
      *     <li>Retrieves the parking code and extension hours selected by the user.</li>
      *     <li>Validates that the code field is not empty.</li>
      *     <li>Creates a {@link Message} object with type {@code REQUEST_EXTENSION} and sends it to the server.</li>
+     *     <li>Now includes user ID for ownership validation.</li>
      * </ul>
      */
     @FXML
@@ -85,7 +86,15 @@ public class ExtendParkingController {
             return;
         }
 
-        String extensionData = code + "," + hours;
+        // Get current user ID for validation
+        int userID = BParkClientScenes.getCurrentUserID();
+        if (userID == 0) {
+            statusLabel.setText("Error: User not logged in properly.");
+            return;
+        }
+
+        // New format: parkingCode,hours,userID (with validation)
+        String extensionData = code + "," + hours + "," + userID;
         // Create and send the extension request message
         Message msg = new Message(MessageType.REQUEST_EXTENSION, extensionData);
         BParkClientScenes.sendMessage(msg);

@@ -23,6 +23,7 @@ public class BParkClientScenes {
 
 	// Current user info
 	private static String currentUser;
+	private static int currentUserID;
 	private static String userType; // "sub", "emp", "mng"
 
 	private static AttendantController attendantController;
@@ -127,6 +128,14 @@ public class BParkClientScenes {
 		currentUser = user;
 	}
 
+	public static int getCurrentUserID() {
+		return currentUserID;
+	}
+
+	public static void setCurrentUserID(int userID) {
+		currentUserID = userID;
+	}
+
 	public static String getUserType() {
 		return userType;
 	}
@@ -179,6 +188,7 @@ public class BParkClientScenes {
 
 			// Clear current user data
 			currentUser = null;
+			currentUserID = 0;
 			userType = null;
 
 //			// Reconnect to server for next login

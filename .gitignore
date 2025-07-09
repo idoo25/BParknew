@@ -1,0 +1,12 @@
+# Test files
+test_validation.java
+*.class
+
+# IDE files
+.vscode/
+.idea/
+
+# Build artifacts
+*.jar
+build/
+target/

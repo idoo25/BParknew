@@ -238,7 +238,15 @@ public class SubscriberController implements Initializable {
 
 			// Step 3: If user confirms, proceed with cancellation
 			if (result.isPresent() && result.get() == ButtonType.OK) {
-				String cancellationData = BParkClientScenes.getCurrentUser() + "," + code;
+				// Get current user ID for validation
+				int userID = BParkClientScenes.getCurrentUserID();
+				if (userID == 0) {
+					showError("User Error", "Error: User not logged in properly.");
+					return;
+				}
+
+				// New format: reservationCode,userID (with validation)
+				String cancellationData = code + "," + userID;
 				Message msg = new Message(MessageType.CANCEL_RESERVATION, cancellationData);
 				BParkClientScenes.sendMessage(msg);
 				txtCancelCode.clear();

@@ -476,6 +476,18 @@ public class ParkingController {
 	}
 
 	/**
+	 * Cancel a reservation with user validation
+	 */
+	public String cancelReservation(int reservationCode, int userID) {
+		// Validate parking order ownership
+		if (!validateParkingOrderOwnership(reservationCode, userID)) {
+			return "Access denied: This reservation does not belong to your account.";
+		}
+
+		return cancelReservationInternal(reservationCode, "User requested cancellation");
+	}
+
+	/**
 	 * Internal cancellation method
 	 */
 	private String cancelReservationInternal(int reservationCode, String reason) {
@@ -747,6 +759,25 @@ public class ParkingController {
 	}
 
 	/**
+	 * Exit parking with user validation
+	 */
+	public String exitParking(String parkingCodeStr, int userID) {
+		try {
+			int parkingCode = Integer.parseInt(parkingCodeStr);
+
+			// Validate parking order ownership
+			if (!validateParkingOrderOwnership(parkingCode, userID)) {
+				return "Access denied: This parking session does not belong to your account.";
+			}
+
+			// Call the original method if validation passes
+			return exitParking(parkingCodeStr);
+		} catch (NumberFormatException e) {
+			return "Invalid parking code format";
+		}
+	}
+
+	/**
 	 * Extend parking time
 	 */
 	public String extendParkingTime(String parkingCodeStr, int additionalHours) {
@@ -839,6 +870,29 @@ public class ParkingController {
 		}
 
 		return "Invalid parking code or parking session not active.";
+	}
+
+	/**
+	 * Extend parking time with user validation
+	 */
+	public String extendParkingTime(String parkingCodeStr, int additionalHours, int userID) {
+		if (additionalHours < MIN_EXTENSION_HOURS || additionalHours > MAX_EXTENSION_HOURS) {
+			return "Can only extend parking by " + MIN_EXTENSION_HOURS + "-" + MAX_EXTENSION_HOURS + " hours.";
+		}
+
+		try {
+			int parkingCode = Integer.parseInt(parkingCodeStr);
+
+			// Validate parking order ownership
+			if (!validateParkingOrderOwnership(parkingCode, userID)) {
+				return "Access denied: This parking order does not belong to your account.";
+			}
+
+			// Call the original method if validation passes
+			return extendParkingTime(parkingCodeStr, additionalHours);
+		} catch (NumberFormatException e) {
+			return "Invalid parking code format.";
+		}
 	}
 
 	// ========== PARKING QUERIES ==========
@@ -1424,6 +1478,36 @@ public class ParkingController {
 			}
 		} catch (SQLException e) {
 			System.out.println("Error checking user ID: " + e.getMessage());
+		} finally {
+			DBController.getInstance().releaseConnection(conn);
+		}
+		return false;
+	}
+
+	/**
+	 * Validate that a parking order belongs to the specified user
+	 * @param parkingInfoID The parking order ID
+	 * @param userID The user ID to validate ownership
+	 * @return true if the parking order belongs to the user, false otherwise
+	 */
+	public boolean validateParkingOrderOwnership(int parkingInfoID, int userID) {
+		String qry = "SELECT COUNT(*) FROM parkinginfo WHERE ParkingInfo_ID = ? AND User_ID = ?";
+		Connection conn = DBController.getInstance().getConnection();
+
+		try (PreparedStatement stmt = conn.prepareStatement(qry)) {
+			stmt.setInt(1, parkingInfoID);
+			stmt.setInt(2, userID);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					boolean isOwner = rs.getInt(1) > 0;
+					if (!isOwner) {
+						System.out.println("Security Alert: User " + userID + " attempted to access parking order " + parkingInfoID + " without authorization");
+					}
+					return isOwner;
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("Error validating parking order ownership: " + e.getMessage());
 		} finally {
 			DBController.getInstance().releaseConnection(conn);
 		}
