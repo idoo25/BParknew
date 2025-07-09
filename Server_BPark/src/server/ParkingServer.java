@@ -229,16 +229,26 @@ public class ParkingServer extends AbstractServer {
 				break;
 
 			case CANCEL_RESERVATION:
-				// Expected format: "userName,reservationCode"
-				String[] cancelData = ((String) message.getContent()).split(",", 2);
-				if (cancelData.length != 2) {
+				// Expected format: "userName,reservationCode" or "reservationCode,userID" for new validation
+				String[] cancelData = ((String) message.getContent()).split(",", 3);
+				if (cancelData.length < 2) {
 					ret = new Message(MessageType.CANCELLATION_RESPONSE, "ERROR: Invalid cancellation data format");
 				} else {
 					try {
-						String cancelUserName = cancelData[0].trim();
-						int reservationCode = Integer.parseInt(cancelData[1].trim());
-						String cancelResult = parkingController.cancelReservation(cancelUserName, reservationCode);
-						ret = new Message(MessageType.CANCELLATION_RESPONSE, cancelResult);
+						// Check if this is the new format with userID (format: "reservationCode,userID")
+						if (cancelData.length == 2 && cancelData[0].matches("\\d+") && cancelData[1].matches("\\d+")) {
+							// New format: reservationCode,userID
+							int reservationCode = Integer.parseInt(cancelData[0].trim());
+							int userID = Integer.parseInt(cancelData[1].trim());
+							String cancelResult = parkingController.cancelReservation(reservationCode, userID);
+							ret = new Message(MessageType.CANCELLATION_RESPONSE, cancelResult);
+						} else {
+							// Old format: userName,reservationCode (backward compatibility)
+							String cancelUserName = cancelData[0].trim();
+							int reservationCode = Integer.parseInt(cancelData[1].trim());
+							String cancelResult = parkingController.cancelReservation(cancelUserName, reservationCode);
+							ret = new Message(MessageType.CANCELLATION_RESPONSE, cancelResult);
+						}
 					} catch (NumberFormatException e) {
 						ret = new Message(MessageType.CANCELLATION_RESPONSE, "ERROR: Invalid reservation code format");
 					}
@@ -262,17 +272,24 @@ public class ParkingServer extends AbstractServer {
 			case REQUEST_EXTENSION:
 				try {
 					String[] parts = ((String) message.getContent()).split(",");
-					if (parts.length != 2) {
-						ret = new Message(MessageType.EXTENSION_RESPONSE, "Invalid extension format.");
-					} else {
+					if (parts.length == 2) {
+						// Old format: parkingCode,hours (backward compatibility)
 						String parkingCode = parts[0].trim();
 						int additionalHours = Integer.parseInt(parts[1].trim());
 						String result = parkingController.extendParkingTime(parkingCode, additionalHours);
-
 						ret = new Message(MessageType.EXTENSION_RESPONSE, result);
+					} else if (parts.length == 3) {
+						// New format: parkingCode,hours,userID (with validation)
+						String parkingCode = parts[0].trim();
+						int additionalHours = Integer.parseInt(parts[1].trim());
+						int userID = Integer.parseInt(parts[2].trim());
+						String result = parkingController.extendParkingTime(parkingCode, additionalHours, userID);
+						ret = new Message(MessageType.EXTENSION_RESPONSE, result);
+					} else {
+						ret = new Message(MessageType.EXTENSION_RESPONSE, "Invalid extension format.");
 					}
 				} catch (NumberFormatException e) {
-					ret = new Message(MessageType.EXTENSION_RESPONSE, "Invalid number format for extension hours.");
+					ret = new Message(MessageType.EXTENSION_RESPONSE, "Invalid number format for extension hours or user ID.");
 				}
 				client.sendToClient(serialize(ret));
 				break;
@@ -284,6 +301,29 @@ public class ParkingServer extends AbstractServer {
 				client.sendToClient(serialize(response));
 				break;
 			}
+
+			case EXIT_PARKING:
+				try {
+					String[] parts = ((String) message.getContent()).split(",");
+					if (parts.length == 1) {
+						// Old format: parkingCode (backward compatibility)
+						String parkingCode = parts[0].trim();
+						String result = parkingController.exitParking(parkingCode);
+						ret = new Message(MessageType.EXIT_PARKING_RESPONSE, result);
+					} else if (parts.length == 2) {
+						// New format: parkingCode,userID (with validation)
+						String parkingCode = parts[0].trim();
+						int userID = Integer.parseInt(parts[1].trim());
+						String result = parkingController.exitParking(parkingCode, userID);
+						ret = new Message(MessageType.EXIT_PARKING_RESPONSE, result);
+					} else {
+						ret = new Message(MessageType.EXIT_PARKING_RESPONSE, "Invalid exit parking format.");
+					}
+				} catch (NumberFormatException e) {
+					ret = new Message(MessageType.EXIT_PARKING_RESPONSE, "Invalid number format for user ID.");
+				}
+				client.sendToClient(serialize(ret));
+				break;
 
 			default:
 				System.out.println("Unknown message type: " + message.getType());
