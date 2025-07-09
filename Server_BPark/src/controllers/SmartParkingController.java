@@ -462,7 +462,32 @@ public class SmartParkingController {
         return "Invalid parking code or already exited";
     }
     
+    /**
+     * Extend parking time (legacy method - deprecated for security reasons)
+     * @deprecated Use extendParkingTime(String userName, String parkingCodeStr, int additionalHours) instead
+     */
+    @Deprecated
     public String extendParkingTime(String parkingCodeStr, int additionalHours) {
+        // For backward compatibility, but should be replaced with secured version
+        System.out.println("WARNING: Using deprecated extendParkingTime without user authorization");
+        return extendParkingTimeInternal(null, parkingCodeStr, additionalHours);
+    }
+
+    /**
+     * Extend parking time with user authorization
+     * @param userName The username of the user requesting the extension
+     * @param parkingCodeStr The parking code as string
+     * @param additionalHours Number of additional hours to extend
+     * @return Result message
+     */
+    public String extendParkingTime(String userName, String parkingCodeStr, int additionalHours) {
+        return extendParkingTimeInternal(userName, parkingCodeStr, additionalHours);
+    }
+
+    /**
+     * Internal method to extend parking time
+     */
+    private String extendParkingTimeInternal(String userName, String parkingCodeStr, int additionalHours) {
         if (additionalHours < 1 || additionalHours > 4) {
             return "Can only extend parking by 1-4 hours";
         }
@@ -470,6 +495,12 @@ public class SmartParkingController {
 
         try {
             int parkingCode = Integer.parseInt(parkingCodeStr);
+
+            // Authorization check: Verify that the parking order belongs to the requesting user
+            if (userName != null && !verifyParkingOrderOwnership(userName, parkingCode)) {
+                return "Access denied: You can only extend your own parking sessions.";
+            }
+
             String qry = "SELECT pi.* FROM ParkingInfo pi WHERE pi.Code = ? AND pi.Actual_end_time IS NULL";
             
             try (PreparedStatement stmt = conn.prepareStatement(qry)) {
@@ -640,7 +671,36 @@ public class SmartParkingController {
         return "Failed to update subscriber information";
     }
     
+    /**
+     * Cancel a reservation (legacy method - deprecated for security reasons)
+     * @deprecated Use cancelReservation(String userName, int reservationCode) instead
+     */
+    @Deprecated
     public String cancelReservation(int reservationCode) {
+        // For backward compatibility, but should be replaced with secured version
+        System.out.println("WARNING: Using deprecated cancelReservation without user authorization");
+        return cancelReservationInternal(null, reservationCode);
+    }
+
+    /**
+     * Cancel a reservation with user authorization
+     * @param userName The username of the user requesting the cancellation
+     * @param reservationCode The reservation code
+     * @return Result message
+     */
+    public String cancelReservation(String userName, int reservationCode) {
+        return cancelReservationInternal(userName, reservationCode);
+    }
+
+    /**
+     * Internal method to cancel a reservation
+     */
+    private String cancelReservationInternal(String userName, int reservationCode) {
+        // Authorization check: Verify that the reservation belongs to the requesting user
+        if (userName != null && !verifyReservationOwnership(userName, reservationCode)) {
+            return "Access denied: You can only cancel your own reservations.";
+        }
+
         String qry = "UPDATE Reservations SET statusEnum = 'cancelled' WHERE Reservation_code = ? AND statusEnum = 'active'";
         Connection conn = DBController.getInstance().getConnection();
 
@@ -829,13 +889,39 @@ public class SmartParkingController {
     }
     
     /**
-     * Request parking extension during the last hour
+     * Request parking extension during the last hour (legacy method - deprecated for security reasons)
+     * @deprecated Use requestParkingExtension(String userName, String parkingCodeStr) instead
      */
+    @Deprecated
     public String requestParkingExtension(String parkingCodeStr) {
+        // For backward compatibility, but should be replaced with secured version
+        System.out.println("WARNING: Using deprecated requestParkingExtension without user authorization");
+        return requestParkingExtensionInternal(null, parkingCodeStr);
+    }
+
+    /**
+     * Request parking extension during the last hour with user authorization
+     * @param userName The username of the user requesting the extension
+     * @param parkingCodeStr The parking code as string
+     * @return Result message
+     */
+    public String requestParkingExtension(String userName, String parkingCodeStr) {
+        return requestParkingExtensionInternal(userName, parkingCodeStr);
+    }
+
+    /**
+     * Internal method to request parking extension during the last hour
+     */
+    private String requestParkingExtensionInternal(String userName, String parkingCodeStr) {
     	Connection conn = DBController.getInstance().getConnection();
 
         try {
             int parkingCode = Integer.parseInt(parkingCodeStr);
+
+            // Authorization check: Verify that the parking order belongs to the requesting user
+            if (userName != null && !verifyParkingOrderOwnership(userName, parkingCode)) {
+                return "Access denied: You can only extend your own parking sessions.";
+            }
             
             String sessionQuery = """
                 SELECT pi.*, ps.ParkingSpot_ID 
@@ -1300,6 +1386,66 @@ public class SmartParkingController {
         }
 
         
+        return false;
+    }
+
+    /**
+     * Verify that a parking order belongs to the specified user
+     * @param userName The username of the user
+     * @param parkingCode The parking code (ParkingInfo_ID)
+     * @return true if the parking order belongs to the user, false otherwise
+     */
+    private boolean verifyParkingOrderOwnership(String userName, int parkingCode) {
+        String qry = """
+                SELECT COUNT(*) FROM ParkingInfo pi 
+                JOIN users u ON pi.User_ID = u.User_ID 
+                WHERE u.UserName = ? AND pi.Code = ?
+                """;
+        Connection conn = DBController.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(qry)) {
+            stmt.setString(1, userName);
+            stmt.setInt(2, parkingCode);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error verifying parking order ownership: " + e.getMessage());
+        } finally {
+            DBController.getInstance().releaseConnection(conn);
+        }
+        return false;
+    }
+
+    /**
+     * Verify that a reservation belongs to the specified user
+     * @param userName The username of the user
+     * @param reservationCode The reservation code
+     * @return true if the reservation belongs to the user, false otherwise
+     */
+    private boolean verifyReservationOwnership(String userName, int reservationCode) {
+        String qry = """
+                SELECT COUNT(*) FROM Reservations r 
+                JOIN users u ON r.User_ID = u.User_ID 
+                WHERE u.UserName = ? AND r.Reservation_code = ?
+                """;
+        Connection conn = DBController.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(qry)) {
+            stmt.setString(1, userName);
+            stmt.setInt(2, reservationCode);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error verifying reservation ownership: " + e.getMessage());
+        } finally {
+            DBController.getInstance().releaseConnection(conn);
+        }
         return false;
     }
 }

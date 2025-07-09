@@ -462,23 +462,31 @@ public class ParkingController {
 	}
 
 	/**
-	 * Cancel a reservation
+	 * Cancel a reservation (legacy method - deprecated for security reasons)
+	 * @deprecated Use cancelReservation(String userName, int reservationCode) instead
 	 */
+	@Deprecated
 	public String cancelReservation(int reservationCode) {
-		return cancelReservationInternal(reservationCode, "User requested cancellation");
+		// For backward compatibility, but should be replaced with secured version
+		System.out.println("WARNING: Using deprecated cancelReservation without user authorization");
+		return cancelReservationInternal(null, reservationCode, "User requested cancellation");
 	}
 
 	/**
-	 * Cancel a reservation (with attendant check)
+	 * Cancel a reservation (with user authorization check)
 	 */
-	public String cancelReservation(String subscriberUserName, int reservationCode) {
-		return cancelReservationInternal(reservationCode, "User requested cancellation");
+	public String cancelReservation(String userName, int reservationCode) {
+		return cancelReservationInternal(userName, reservationCode, "User requested cancellation");
 	}
 
 	/**
 	 * Internal cancellation method
 	 */
-	private String cancelReservationInternal(int reservationCode, String reason) {
+	private String cancelReservationInternal(String userName, int reservationCode, String reason) {
+		// Authorization check: Verify that the reservation belongs to the requesting user
+		if (userName != null && !verifyReservationOwnership(userName, reservationCode)) {
+			return "Access denied: You can only cancel your own reservations.";
+		}
 		// Get reservation info for notification
 		String getUserQry = """
 				SELECT u.Email, u.Name, pi.statusEnum, pi.ParkingSpot_ID
@@ -681,13 +689,40 @@ public class ParkingController {
 	}
 
 	/**
-	 * Exit parking
+	 * Exit parking (legacy method - deprecated for security reasons)
+	 * @deprecated Use exitParking(String userName, String parkingCodeStr) instead
 	 */
+	@Deprecated
 	public String exitParking(String parkingCodeStr) {
+		// For backward compatibility, but should be replaced with secured version
+		System.out.println("WARNING: Using deprecated exitParking without user authorization");
+		return exitParkingInternal(null, parkingCodeStr);
+	}
+
+	/**
+	 * Exit parking with user authorization
+	 * @param userName The username of the user requesting to exit
+	 * @param parkingCodeStr The parking code as string
+	 * @return Result message
+	 */
+	public String exitParking(String userName, String parkingCodeStr) {
+		return exitParkingInternal(userName, parkingCodeStr);
+	}
+
+	/**
+	 * Internal method to exit parking
+	 */
+	private String exitParkingInternal(String userName, String parkingCodeStr) {
 		Connection conn = DBController.getInstance().getConnection();
 
 		try {
 			int parkingCode = Integer.parseInt(parkingCodeStr);
+
+			// Authorization check: Verify that the parking order belongs to the requesting user
+			if (userName != null && !verifyParkingOrderOwnership(userName, parkingCode)) {
+				return "Access denied: You can only exit your own parking sessions.";
+			}
+
 			String qry = """
 					SELECT pi.*, ps.ParkingSpot_ID
 					FROM parkinginfo pi
@@ -747,9 +782,31 @@ public class ParkingController {
 	}
 
 	/**
-	 * Extend parking time
+	 * Extend parking time (legacy method - deprecated for security reasons)
+	 * @deprecated Use extendParkingTime(String userName, String parkingCodeStr, int additionalHours) instead
 	 */
+	@Deprecated
 	public String extendParkingTime(String parkingCodeStr, int additionalHours) {
+		// For backward compatibility, but should be replaced with secured version
+		System.out.println("WARNING: Using deprecated extendParkingTime without user authorization");
+		return extendParkingTimeInternal(null, parkingCodeStr, additionalHours);
+	}
+
+	/**
+	 * Extend parking time with user authorization
+	 * @param userName The username of the user requesting the extension
+	 * @param parkingCodeStr The parking code as string
+	 * @param additionalHours Number of additional hours to extend
+	 * @return Result message
+	 */
+	public String extendParkingTime(String userName, String parkingCodeStr, int additionalHours) {
+		return extendParkingTimeInternal(userName, parkingCodeStr, additionalHours);
+	}
+
+	/**
+	 * Internal method to extend parking time
+	 */
+	private String extendParkingTimeInternal(String userName, String parkingCodeStr, int additionalHours) {
 		if (additionalHours < MIN_EXTENSION_HOURS || additionalHours > MAX_EXTENSION_HOURS) {
 			return "Can only extend parking by " + MIN_EXTENSION_HOURS + "-" + MAX_EXTENSION_HOURS + " hours.";
 		}
@@ -757,6 +814,11 @@ public class ParkingController {
 		Connection conn = DBController.getInstance().getConnection();
 		try {
 			int parkingCode = Integer.parseInt(parkingCodeStr);
+
+			// Authorization check: Verify that the parking order belongs to the requesting user
+			if (userName != null && !verifyParkingOrderOwnership(userName, parkingCode)) {
+				return "Access denied: You can only extend your own parking sessions.";
+			}
 
 			// Get current parking info
 			String getUserQry = """
@@ -1424,6 +1486,66 @@ public class ParkingController {
 			}
 		} catch (SQLException e) {
 			System.out.println("Error checking user ID: " + e.getMessage());
+		} finally {
+			DBController.getInstance().releaseConnection(conn);
+		}
+		return false;
+	}
+
+	/**
+	 * Verify that a parking order belongs to the specified user
+	 * @param userName The username of the user
+	 * @param parkingCode The parking code (ParkingInfo_ID)
+	 * @return true if the parking order belongs to the user, false otherwise
+	 */
+	private boolean verifyParkingOrderOwnership(String userName, int parkingCode) {
+		String qry = """
+				SELECT COUNT(*) FROM parkinginfo pi 
+				JOIN users u ON pi.User_ID = u.User_ID 
+				WHERE u.UserName = ? AND pi.ParkingInfo_ID = ?
+				""";
+		Connection conn = DBController.getInstance().getConnection();
+
+		try (PreparedStatement stmt = conn.prepareStatement(qry)) {
+			stmt.setString(1, userName);
+			stmt.setInt(2, parkingCode);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					return rs.getInt(1) > 0;
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("Error verifying parking order ownership: " + e.getMessage());
+		} finally {
+			DBController.getInstance().releaseConnection(conn);
+		}
+		return false;
+	}
+
+	/**
+	 * Verify that a reservation belongs to the specified user
+	 * @param userName The username of the user
+	 * @param reservationCode The reservation code (ParkingInfo_ID for preorder status)
+	 * @return true if the reservation belongs to the user, false otherwise
+	 */
+	private boolean verifyReservationOwnership(String userName, int reservationCode) {
+		String qry = """
+				SELECT COUNT(*) FROM parkinginfo pi 
+				JOIN users u ON pi.User_ID = u.User_ID 
+				WHERE u.UserName = ? AND pi.ParkingInfo_ID = ? AND pi.statusEnum = 'preorder'
+				""";
+		Connection conn = DBController.getInstance().getConnection();
+
+		try (PreparedStatement stmt = conn.prepareStatement(qry)) {
+			stmt.setString(1, userName);
+			stmt.setInt(2, reservationCode);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					return rs.getInt(1) > 0;
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("Error verifying reservation ownership: " + e.getMessage());
 		} finally {
 			DBController.getInstance().releaseConnection(conn);
 		}
