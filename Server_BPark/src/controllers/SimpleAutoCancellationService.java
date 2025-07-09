@@ -18,7 +18,8 @@ import services.EmailService;
  * 1. Reservation Cancellation (15-minute rule for preorders)
  * 2. Late Pickup Monitoring (15-minute rule for active parkings)
  * 
- * Runs every minute to check both conditions and send email notifications
+ * Runs every 30 seconds to check both conditions and send email notifications
+ * Uses scheduleWithFixedDelay to ensure consistent intervals even if database operations take time
  */
 public class SimpleAutoCancellationService {
     
@@ -34,7 +35,7 @@ public class SimpleAutoCancellationService {
     
     /**
      * Start the automatic monitoring service
-     * Runs every minute to check for:
+     * Runs every 30 seconds to check for:
      * 1. Late preorder reservations (auto-cancel)
      * 2. Late active parkings (mark as late and notify)
      */
@@ -46,17 +47,28 @@ public class SimpleAutoCancellationService {
         
         isRunning = true;
         System.out.println("Starting automatic monitoring service...");
-        System.out.println("Checking every minute for:");
+        System.out.println("Checking every 30 seconds for:");
         System.out.println("  - Late preorder reservations (15+ min late = auto-cancel)");
         System.out.println("  - Late active parkings (15+ min late = notify customer)");
         
-        // Schedule to run every minute
-        scheduler.scheduleAtFixedRate(() -> {
+        // Schedule to run every 30 seconds with fixed delay
+        // Using scheduleWithFixedDelay ensures consistent 30-second intervals
+        // even if database operations take time
+        scheduler.scheduleWithFixedDelay(() -> {
+            long startTime = System.currentTimeMillis();
             try {
+                System.out.println("[" + getCurrentTimestamp() + "] Starting monitoring cycle...");
+                
                 checkAndCancelLatePreorders();
                 checkAndNotifyLatePickups();
+                
+                long executionTime = System.currentTimeMillis() - startTime;
+                System.out.println("[" + getCurrentTimestamp() + "] Monitoring cycle completed in " + executionTime + "ms");
+                
             } catch (Exception e) {
-                System.err.println("Error in auto-monitoring service: " + e.getMessage());
+                long executionTime = System.currentTimeMillis() - startTime;
+                System.err.println("[" + getCurrentTimestamp() + "] Error in auto-monitoring service after " + executionTime + "ms: " + e.getMessage());
+                e.printStackTrace(); // Print full stack trace for debugging
             }
         }, 0, 30, TimeUnit.SECONDS);
     }
@@ -78,66 +90,89 @@ public class SimpleAutoCancellationService {
      * Check for and cancel late preorder reservations
      */
     private void checkAndCancelLatePreorders() {
-        String query = """
-            SELECT 
-                pi.ParkingInfo_ID,
-                pi.User_ID,
-                pi.ParkingSpot_ID,
-                u.UserName,
-                u.Email,
-                u.Name,
-                u.Phone,
-                TIMESTAMPDIFF(MINUTE, pi.Estimated_start_time, NOW()) as minutes_late,
-                pi.Estimated_start_time
-            FROM parkinginfo pi
-            JOIN users u ON pi.User_ID = u.User_ID
-            WHERE pi.statusEnum = 'preorder'
-            AND DATE(pi.Estimated_start_time) = CURDATE()
-            AND pi.ParkingSpot_ID IS NOT NULL
-            AND pi.Estimated_start_time IS NOT NULL
-            AND TIMESTAMPDIFF(MINUTE, pi.Estimated_start_time, NOW()) >= ?
-            """;
-        Connection conn = DBController.getInstance().getConnection();
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, LATE_THRESHOLD_MINUTES);
+        long startTime = System.currentTimeMillis();
+        Connection conn = null;
+        
+        try {
+            conn = DBController.getInstance().getConnection();
+            if (conn == null) {
+                System.err.println("Failed to get database connection for preorder check");
+                return;
+            }
             
-            try (ResultSet rs = stmt.executeQuery()) {
-                int cancelledCount = 0;
+            String query = """
+                SELECT 
+                    pi.ParkingInfo_ID,
+                    pi.User_ID,
+                    pi.ParkingSpot_ID,
+                    u.UserName,
+                    u.Email,
+                    u.Name,
+                    u.Phone,
+                    TIMESTAMPDIFF(MINUTE, pi.Estimated_start_time, NOW()) as minutes_late,
+                    pi.Estimated_start_time
+                FROM parkinginfo pi
+                JOIN users u ON pi.User_ID = u.User_ID
+                WHERE pi.statusEnum = 'preorder'
+                AND DATE(pi.Estimated_start_time) = CURDATE()
+                AND pi.ParkingSpot_ID IS NOT NULL
+                AND pi.Estimated_start_time IS NOT NULL
+                AND TIMESTAMPDIFF(MINUTE, pi.Estimated_start_time, NOW()) >= ?
+                """;
                 
-                while (rs.next()) {
-                    int reservationCode = rs.getInt("ParkingInfo_ID");
-                    int spotId = rs.getInt("ParkingSpot_ID");
-                    String userName = rs.getString("UserName");
-                    String userEmail = rs.getString("Email");
-                    String fullName = rs.getString("Name");
-                    int minutesLate = rs.getInt("minutes_late");
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setInt(1, LATE_THRESHOLD_MINUTES);
+                
+                try (ResultSet rs = stmt.executeQuery()) {
+                    int cancelledCount = 0;
                     
-                    if (cancelLateReservation(reservationCode, spotId)) {
-                        cancelledCount++;
+                    while (rs.next()) {
+                        int reservationCode = rs.getInt("ParkingInfo_ID");
+                        int spotId = rs.getInt("ParkingSpot_ID");
+                        String userName = rs.getString("UserName");
+                        String userEmail = rs.getString("Email");
+                        String fullName = rs.getString("Name");
+                        int minutesLate = rs.getInt("minutes_late");
                         
-                        // Send email notification for auto-cancellation
-                        if (userEmail != null && fullName != null) {
-                            EmailService.sendReservationCancelled(userEmail, fullName, String.valueOf(reservationCode));
+                        if (cancelLateReservation(reservationCode, spotId)) {
+                            cancelledCount++;
+                            
+                            // Send email notification for auto-cancellation
+                            if (userEmail != null && fullName != null) {
+                                EmailService.sendReservationCancelled(userEmail, fullName, String.valueOf(reservationCode));
+                            }
+                            
+                            System.out.println(String.format(
+                                "✅ AUTO-CANCELLED: Reservation %d for %s (Spot %d) - %d minutes late - Email sent",
+                                reservationCode, userName, spotId, minutesLate
+                            ));
                         }
-                        
+                    }
+                    
+                    if (cancelledCount > 0) {
                         System.out.println(String.format(
-                            "✅ AUTO-CANCELLED: Reservation %d for %s (Spot %d) - %d minutes late - Email sent",
-                            reservationCode, userName, spotId, minutesLate
+                            "[%s] Auto-cancellation: %d preorder reservations cancelled",
+                            getCurrentTimestamp(), cancelledCount
                         ));
                     }
                 }
-                
-                if (cancelledCount > 0) {
-                    System.out.println(String.format(
-                        "[%s] Auto-cancellation: %d preorder reservations cancelled",
-                        getCurrentTimestamp(), cancelledCount
-                    ));
-                }
             }
+            
+            long executionTime = System.currentTimeMillis() - startTime;
+            if (executionTime > 5000) { // Log if operation takes more than 5 seconds
+                System.out.println("WARNING: Preorder check took " + executionTime + "ms");
+            }
+            
         } catch (SQLException e) {
-            System.err.println("Database error during auto-cancellation: " + e.getMessage());
-        }finally {
-            DBController.getInstance().releaseConnection(conn);
+            long executionTime = System.currentTimeMillis() - startTime;
+            System.err.println("Database error during auto-cancellation (after " + executionTime + "ms): " + e.getMessage());
+        } catch (Exception e) {
+            long executionTime = System.currentTimeMillis() - startTime;
+            System.err.println("Unexpected error during auto-cancellation (after " + executionTime + "ms): " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                DBController.getInstance().releaseConnection(conn);
+            }
         }
     }
     
@@ -145,63 +180,85 @@ public class SimpleAutoCancellationService {
      * NEW METHOD: Check for late pickups in active parkings and send notifications
      */
     private void checkAndNotifyLatePickups() {
-        String query = """
-            SELECT 
-                pi.ParkingInfo_ID,
-                pi.User_ID,
-                pi.ParkingSpot_ID,
-                u.UserName,
-                u.Email,
-                u.Name,
-                u.Phone,
-                TIMESTAMPDIFF(MINUTE, pi.Estimated_end_time, NOW()) as minutes_late,
-                pi.Estimated_end_time,
-                pi.IsLate
-            FROM parkinginfo pi
-            JOIN users u ON pi.User_ID = u.User_ID
-            WHERE pi.statusEnum = 'active'
-            AND pi.Actual_end_time IS NULL
-            AND pi.Estimated_end_time IS NOT NULL
-            AND TIMESTAMPDIFF(MINUTE, pi.Estimated_end_time, NOW()) >= ?
-            AND pi.IsLate = 'no'
-            """;
-        Connection conn = DBController.getInstance().getConnection();
-
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, LATE_THRESHOLD_MINUTES);
+        long startTime = System.currentTimeMillis();
+        Connection conn = null;
+        
+        try {
+            conn = DBController.getInstance().getConnection();
+            if (conn == null) {
+                System.err.println("Failed to get database connection for late pickup check");
+                return;
+            }
             
-            try (ResultSet rs = stmt.executeQuery()) {
-                int notifiedCount = 0;
+            String query = """
+                SELECT 
+                    pi.ParkingInfo_ID,
+                    pi.User_ID,
+                    pi.ParkingSpot_ID,
+                    u.UserName,
+                    u.Email,
+                    u.Name,
+                    u.Phone,
+                    TIMESTAMPDIFF(MINUTE, pi.Estimated_end_time, NOW()) as minutes_late,
+                    pi.Estimated_end_time,
+                    pi.IsLate
+                FROM parkinginfo pi
+                JOIN users u ON pi.User_ID = u.User_ID
+                WHERE pi.statusEnum = 'active'
+                AND pi.Actual_end_time IS NULL
+                AND pi.Estimated_end_time IS NOT NULL
+                AND TIMESTAMPDIFF(MINUTE, pi.Estimated_end_time, NOW()) >= ?
+                AND pi.IsLate = 'no'
+                """;
+
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setInt(1, LATE_THRESHOLD_MINUTES);
                 
-                while (rs.next()) {
-                    int parkingInfoId = rs.getInt("ParkingInfo_ID");
-                    String userName = rs.getString("UserName");
-                    String userEmail = rs.getString("Email");
-                    String fullName = rs.getString("Name");
-                    int spotId = rs.getInt("ParkingSpot_ID");
-                    int minutesLate = rs.getInt("minutes_late");
+                try (ResultSet rs = stmt.executeQuery()) {
+                    int notifiedCount = 0;
                     
-                    if (markAsLateAndNotify(parkingInfoId, userEmail, fullName)) {
-                        notifiedCount++;
+                    while (rs.next()) {
+                        int parkingInfoId = rs.getInt("ParkingInfo_ID");
+                        String userName = rs.getString("UserName");
+                        String userEmail = rs.getString("Email");
+                        String fullName = rs.getString("Name");
+                        int spotId = rs.getInt("ParkingSpot_ID");
+                        int minutesLate = rs.getInt("minutes_late");
                         
+                        if (markAsLateAndNotify(parkingInfoId, userEmail, fullName)) {
+                            notifiedCount++;
+                            
+                            System.out.println(String.format(
+                                "⏰ LATE PICKUP: Parking %d for %s (Spot %d) - %d minutes late - Email sent",
+                                parkingInfoId, userName, spotId, minutesLate
+                            ));
+                        }
+                    }
+                    
+                    if (notifiedCount > 0) {
                         System.out.println(String.format(
-                            "⏰ LATE PICKUP: Parking %d for %s (Spot %d) - %d minutes late - Email sent",
-                            parkingInfoId, userName, spotId, minutesLate
+                            "[%s] Late pickup monitoring: %d customers notified",
+                            getCurrentTimestamp(), notifiedCount
                         ));
                     }
                 }
-                
-                if (notifiedCount > 0) {
-                    System.out.println(String.format(
-                        "[%s] Late pickup monitoring: %d customers notified",
-                        getCurrentTimestamp(), notifiedCount
-                    ));
-                }
             }
+            
+            long executionTime = System.currentTimeMillis() - startTime;
+            if (executionTime > 5000) { // Log if operation takes more than 5 seconds
+                System.out.println("WARNING: Late pickup check took " + executionTime + "ms");
+            }
+            
         } catch (SQLException e) {
-            System.err.println("Database error during late pickup check: " + e.getMessage());
-        }finally {
-            DBController.getInstance().releaseConnection(conn);
+            long executionTime = System.currentTimeMillis() - startTime;
+            System.err.println("Database error during late pickup check (after " + executionTime + "ms): " + e.getMessage());
+        } catch (Exception e) {
+            long executionTime = System.currentTimeMillis() - startTime;
+            System.err.println("Unexpected error during late pickup check (after " + executionTime + "ms): " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                DBController.getInstance().releaseConnection(conn);
+            }
         }
     }
     

@@ -161,6 +161,7 @@ public class ParkingController {
 			System.out.println("✅ Auto-monitoring service started:");
 			System.out.println("   - Monitoring preorder reservations (auto-cancel after 15 min)");
 			System.out.println("   - Monitoring active parkings (notify late pickups after 15 min)");
+			System.out.println("   - Running every 30 seconds with consistent timing");
 		}
 	}
 
