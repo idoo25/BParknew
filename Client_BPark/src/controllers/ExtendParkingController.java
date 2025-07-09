@@ -85,7 +85,7 @@ public class ExtendParkingController {
             return;
         }
 
-        String extensionData = code + "," + hours;
+        String extensionData = BParkClientScenes.getCurrentUser() + "," + code + "," + hours;
         // Create and send the extension request message
         Message msg = new Message(MessageType.REQUEST_EXTENSION, extensionData);
         BParkClientScenes.sendMessage(msg);

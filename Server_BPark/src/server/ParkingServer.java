@@ -261,13 +261,15 @@ public class ParkingServer extends AbstractServer {
 
 			case REQUEST_EXTENSION:
 				try {
+					// Expected format: "userName,parkingCode,additionalHours"
 					String[] parts = ((String) message.getContent()).split(",");
-					if (parts.length != 2) {
-						ret = new Message(MessageType.EXTENSION_RESPONSE, "Invalid extension format.");
+					if (parts.length != 3) {
+						ret = new Message(MessageType.EXTENSION_RESPONSE, "Invalid extension format. Expected: userName,parkingCode,hours");
 					} else {
-						String parkingCode = parts[0].trim();
-						int additionalHours = Integer.parseInt(parts[1].trim());
-						String result = parkingController.extendParkingTime(parkingCode, additionalHours);
+						String userName = parts[0].trim();
+						String parkingCode = parts[1].trim();
+						int additionalHours = Integer.parseInt(parts[2].trim());
+						String result = parkingController.extendParkingTime(userName, parkingCode, additionalHours);
 
 						ret = new Message(MessageType.EXTENSION_RESPONSE, result);
 					}
